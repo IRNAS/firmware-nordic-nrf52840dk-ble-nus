@@ -82,7 +82,15 @@ void ei_init(void)
 
 void ei_main(void)
 {
+    /* handle command comming from uart */
     ei_command_line_handle();
+    /* handle command comming from BLE NUS */
+    if(ei_ble_rcv_cmd_flag){
+        ei_ble_rcv_cmd_flag = false;
+        ei_at_cmd_handle(ei_ble_rcv_cmd_buffer);
+        memset(ei_ble_rcv_cmd_buffer, 0x00, sizeof(ei_ble_rcv_cmd_buffer));
+    }
+
 }
 
 K_THREAD_DEFINE(ble_write_thread_id, STACKSIZE, ble_write_thread, NULL, NULL,

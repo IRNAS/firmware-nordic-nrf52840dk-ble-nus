@@ -1,5 +1,8 @@
 #include "ble_nus.h"
 
+bool ei_ble_rcv_cmd_flag = false;
+char ei_ble_rcv_cmd_buffer[50] = {0};
+
 #define LOG_MODULE_NAME peripheral_uart
 LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 
@@ -384,7 +387,9 @@ static void bt_receive_cb(struct bt_conn *conn, const uint8_t *const data,
             tx->len++;
         }
 
-        //ei_at_cmd_handle((const char*)tx->data);
+        ei_ble_rcv_cmd_flag = true;
+        memcpy(ei_ble_rcv_cmd_buffer, tx->data, tx->len);
+
         // err = uart_tx(uart, tx->data, tx->len, SYS_FOREVER_MS);
         // if (err) {
         //     k_fifo_put(&fifo_uart_tx_data, tx);
