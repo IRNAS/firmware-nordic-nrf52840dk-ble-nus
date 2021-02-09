@@ -25,3 +25,4 @@ extern char ei_ble_rcv_cmd_buffer[50];
 
 void ble_nus_init(void);
 void ble_write_thread(void);
+void ble_nus_send_data(const char *buffer, uint8_t size);

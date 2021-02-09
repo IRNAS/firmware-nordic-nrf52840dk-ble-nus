@@ -538,6 +538,13 @@ void ble_nus_init(void)
     // }
 }
 
+void ble_nus_send_data(const char *buffer, uint8_t size)
+{
+    if (bt_nus_send(NULL,(uint8_t *)buffer, size)) {
+        LOG_WRN("Failed to send data over BLE connection");
+    }
+}
+
 void ble_write_thread(void)
 {
     /* Don't go any further until BLE is initialized */

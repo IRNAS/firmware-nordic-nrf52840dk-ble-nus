@@ -23,6 +23,7 @@
 #ifndef _EDGE_IMPULSE_AT_COMMANDS_H_
 #define _EDGE_IMPULSE_AT_COMMANDS_H_
 
+#include "ble_nus.h"
 
 // maximum number of commands
 #ifndef EI_AT_MAX_CMDS
@@ -182,6 +183,7 @@ void ei_at_cmd_print_info() {
         }
         ei_printf("\n");
     }
+    ble_nus_send_data("ok", 2);
 }
 
 /**
