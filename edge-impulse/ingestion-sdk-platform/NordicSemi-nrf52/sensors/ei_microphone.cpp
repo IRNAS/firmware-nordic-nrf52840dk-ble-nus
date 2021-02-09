@@ -163,7 +163,7 @@ static void pdm_data_handler(nrfx_pdm_evt_t const * p_evt)
         buf_toggle ^= 1;
         err = nrfx_pdm_buffer_set(pdm_buffer_temp[buf_toggle], AUDIO_DSP_SAMPLE_BUFFER_SIZE);
         if(err != NRFX_SUCCESS){
-            printk("PDM buffer init error: %d\n", err);
+            ei_printf("PDM buffer init error: %d\n", err);
         }
     }
     if(p_evt->buffer_released != NULL){
@@ -303,7 +303,7 @@ void ei_microphone_init(void)
     /* PDM interrupt configuration necessary for Zephyr */
 #if ((CONFIG_SOC_NRF52840 == 1) || \
        (CONFIG_SOC_NRF52840_QIAA == 1))
-    IRQ_DIRECT_CONNECT(PDM_IRQn, 6, nrfx_pdm_irq_handler, 0);
+    IRQ_DIRECT_CONNECT(PDM_IRQn, 3, nrfx_pdm_irq_handler, 0);
 #elif ((CONFIG_SOC_NRF5340_CPUAPP == 1) || \
        (CONFIG_SOC_NRF5340_CPUAPP_QKAA == 1))
     IRQ_DIRECT_CONNECT(PDM0_IRQn, 6, nrfx_pdm_irq_handler, 0);

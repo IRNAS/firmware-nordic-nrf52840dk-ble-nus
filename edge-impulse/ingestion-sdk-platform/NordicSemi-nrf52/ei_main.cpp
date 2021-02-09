@@ -10,6 +10,21 @@
 #include "ei_inertialsensor.h"
 #include "ei_microphone.h"
 
+/******/
+#include <zephyr/types.h>
+#include <zephyr.h>
+#include <drivers/uart.h>
+
+#include <device.h>
+#include <soc.h>
+#include "ble_nus.h"
+/*****/
+
+#define STACKSIZE CONFIG_BT_NUS_THREAD_STACK_SIZE
+#define PRIORITY 5
+
+#include "ble_nus.h"
+
 /* help function for list files which is not currently implemented */
 void list_files_help_fn(void (*data_fn)(char *))
 {
@@ -21,6 +36,8 @@ void ei_init(void)
 {
     ei_printf("Hello from Edge Impulse Device SDK.\r\n"
               "Compiled on %s %s\r\n", __DATE__, __TIME__);
+
+    ble_nus_init();
 
     /* Setup the inertial sensor */
     if(ei_inertial_init() == false) {
@@ -67,3 +84,6 @@ void ei_main(void)
 {
     ei_command_line_handle();
 }
+
+K_THREAD_DEFINE(ble_write_thread_id, STACKSIZE, ble_write_thread, NULL, NULL,
+        NULL, PRIORITY, 0, 0);
