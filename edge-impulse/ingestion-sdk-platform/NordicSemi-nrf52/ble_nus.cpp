@@ -25,6 +25,16 @@ LOG_MODULE_REGISTER(LOG_MODULE_NAME);
 
 static K_SEM_DEFINE(ble_init_ok, 0, 1);
 
+struct bt_le_adv_param nus_ble_param = {
+	.id = BT_ID_DEFAULT,
+	.sid = 0,
+	.secondary_max_skip = 0,
+	.options = BT_LE_ADV_OPT_CONNECTABLE,
+	.interval_min = BT_GAP_ADV_FAST_INT_MIN_2,
+	.interval_max = BT_GAP_ADV_FAST_INT_MAX_2,
+	.peer = NULL,
+};
+
 static struct bt_conn *current_conn;
 static struct bt_conn *auth_conn;
 
@@ -455,38 +465,6 @@ static void configure_gpio(void)
     }
 }
 
-struct bt_le_adv_param test_ble = {
-	.id = BT_ID_DEFAULT,
-	.sid = 0,
-	.secondary_max_skip = 0,
-	.options = BT_LE_ADV_OPT_CONNECTABLE,
-	.interval_min = BT_GAP_ADV_FAST_INT_MIN_2,
-	.interval_max = BT_GAP_ADV_FAST_INT_MAX_2,
-	.peer = NULL,
-};
-
-
-#define _BT_LE_ADV_PARAM_INIT(_options, _int_min, _int_max, _peer) \
-{ \
-	.id = BT_ID_DEFAULT, \
-	.sid = 0, \
-	.secondary_max_skip = 0, \
-	.options = (_options), \
-	.interval_min = (_int_min), \
-	.interval_max = (_int_max), \
-	.peer = (_peer), \
-}
-
-#define _BT_LE_ADV_PARAM(_options, _int_min, _int_max, _peer) \
-    (test_ble[0] =  \
-        _BT_LE_ADV_PARAM_INIT(_options, _int_min, _int_max, _peer) \
-        )
-
-#define _BT_LE_ADV_CONN _BT_LE_ADV_PARAM(BT_LE_ADV_OPT_CONNECTABLE, \
-                BT_GAP_ADV_FAST_INT_MIN_2, \
-                BT_GAP_ADV_FAST_INT_MAX_2, NULL)
-
-
 void ble_nus_init(void)
 {
     int blink_status = 0;
@@ -524,7 +502,7 @@ void ble_nus_init(void)
         return;
     }
 
-    err = bt_le_adv_start(&test_ble, ad, ARRAY_SIZE(ad), sd,
+    err = bt_le_adv_start(&nus_ble_param, ad, ARRAY_SIZE(ad), sd,
                   ARRAY_SIZE(sd));
     if (err) {
         LOG_ERR("Advertising failed to start (err %d)", err);
@@ -542,23 +520,5 @@ void ble_nus_send_data(const char *buffer, uint8_t size)
 {
     if (bt_nus_send(NULL,(uint8_t *)buffer, size)) {
         LOG_WRN("Failed to send data over BLE connection");
-    }
-}
-
-void ble_write_thread(void)
-{
-    /* Don't go any further until BLE is initialized */
-    k_sem_take(&ble_init_ok, K_FOREVER);
-
-    for (;;) {
-        /* Wait indefinitely for data to be sent over bluetooth */
-        struct uart_data_t *buf = (struct uart_data_t *)k_fifo_get(&fifo_uart_rx_data,
-                             K_FOREVER);
-
-        if (bt_nus_send(NULL, buf->data, buf->len)) {
-            LOG_WRN("Failed to send data over BLE connection");
-        }
-
-        k_free(buf);
     }
 }
