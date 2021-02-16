@@ -300,12 +300,30 @@ static void at_read_buffer(char *start_s, char *length_s) {
     size_t start = (size_t)atoi(start_s);
     size_t length = (size_t)atoi(length_s);
 
+    /*set uart speed to 1M baud*/
+    int err = uart_change_baudrate(BAUD_1000000);
+    if(0 != err){
+        ei_printf("UART config error: %d\n", err);
+    }
+    else{
+        ei_printf("UART config OK: %d\n", err);
+    }
+
     bool success = ei_config_get_context()->read_buffer(start, length, at_read_file_data);
     if (!success) {
         ei_printf("Failed to read from buffer\n");
     }
     else {
         ei_printf("\n");
+    }
+
+    /*return uart speed to 115200 baud*/
+    err = uart_change_baudrate(BAUD_115200);
+    if(0 != err){
+        ei_printf("UART config error: %d\n", err);
+    }
+    else{
+        ei_printf("UART config OK: %d\n", err);
     }
 }
 
