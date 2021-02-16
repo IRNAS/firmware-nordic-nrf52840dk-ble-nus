@@ -80,6 +80,14 @@ typedef enum
 
 }tEiState;
 
+typedef enum
+{
+	BAUD_9600 = 0,
+	BAUD_115200,
+	BAUD_460800,
+	BAUD_1000000
+}tEiBaud;
+
 /** C Callback types */
 typedef int (*c_callback)(uint8_t out_buffer[32], size_t *out_size);
 typedef bool (*c_callback_status)(void);
@@ -121,6 +129,7 @@ public:
 /* Function prototypes ----------------------------------------------------- */
 void ei_command_line_handle(void);
 bool ei_user_invoke_stop(void);
+bool ei_ble_user_invoke_stop(void);
 void ei_write_string(char *data, int length);
 void ei_printfloat(int n_decimals, int n, ...);
 void ei_printf_float(float f);
@@ -129,6 +138,7 @@ int BOARD_ledInit(void);
 int uart_init(void);
 char uart_getchar(void);
 void uart_putchar(char send_char);
+int uart_change_baudrate(tEiBaud baud);
 
 /* Reference to object for external usage ---------------------------------- */
 extern EiDeviceNRF52 EiDevice;

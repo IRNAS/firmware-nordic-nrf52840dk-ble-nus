@@ -26,6 +26,7 @@
 #include "ei_inertialsensor.h"
 #include "ei_microphone.h"
 #include "ei_device_nordic_nrf52.h"
+#include "ble_nus.h"
 
 #if defined(EI_CLASSIFIER_SENSOR) && EI_CLASSIFIER_SENSOR == EI_CLASSIFIER_SENSOR_ACCELEROMETER
 
@@ -52,6 +53,7 @@ static bool acc_data_callback(const void *sample_buf, uint32_t byteLength)
 
 void run_nn(bool debug)
 {
+    char ble_printf[64] = {0};
     bool stop_inferencing = false;
     // summary of inferencing settings (from model_metadata.h)
     ei_printf("Inferencing settings:\n");
@@ -125,8 +127,23 @@ void run_nn(bool debug)
         ei_printf("\r\n");        
 #endif
 
-        if(ei_user_invoke_stop()) {
+    /*BLE PRINTF*/
+        for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {            
+            sprintf(ble_printf, "%s: %f\n", result.classification[ix].label, result.classification[ix].value);
+            ble_nus_send_data(ble_printf, strlen(ble_printf));
+        }
+#if EI_CLASSIFIER_HAS_ANOMALY == 1
+        sprintf(ble_printf, "anomaly score: %f\n", result.anomaly);
+        ble_nus_send_data(ble_printf, strlen(ble_printf));
+#endif
+
+        memset(ble_printf, 0x00, sizeof(ble_printf));
+    /*END BLE PRINTF*/
+
+        if(ei_user_invoke_stop() || ei_ble_user_invoke_stop()) {
             ei_printf("Inferencing stopped by user\r\n");
+            ble_nus_send_data("Inferencing stopped by user\n", strlen("Inferencing stopped by user\n"));
+            memset(ble_printf, 0x00, sizeof(ble_printf));
             break;
         }
     }
@@ -134,6 +151,7 @@ void run_nn(bool debug)
 #elif defined(EI_CLASSIFIER_SENSOR) && EI_CLASSIFIER_SENSOR == EI_CLASSIFIER_SENSOR_MICROPHONE
 void run_nn(bool debug)
 {
+    char ble_printf[64] = {0};
     extern signal_t ei_microphone_get_signal();
 
     // summary of inferencing settings (from model_metadata.h)
@@ -202,8 +220,23 @@ void run_nn(bool debug)
         ei_printf("\r\n");
 #endif
 
-        if(ei_user_invoke_stop()) {
+        /*BLE PRINTF*/
+        for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {            
+            sprintf(ble_printf, "%s: %f\n", result.classification[ix].label, result.classification[ix].value);
+            ble_nus_send_data(ble_printf, strlen(ble_printf));
+        }
+#if EI_CLASSIFIER_HAS_ANOMALY == 1
+        sprintf(ble_printf, "anomaly score: %f\n", result.anomaly);
+        ble_nus_send_data(ble_printf, strlen(ble_printf));
+#endif
+
+        memset(ble_printf, 0x00, sizeof(ble_printf));
+    /*END BLE PRINTF*/
+
+        if(ei_user_invoke_stop() || ei_ble_user_invoke_stop()) {
             ei_printf("Inferencing stopped by user\r\n");
+            ble_nus_send_data("Inferencing stopped by user\n", strlen("Inferencing stopped by user\n"));
+            memset(ble_printf, 0x00, sizeof(ble_printf));
             break;
         }
     }
@@ -213,6 +246,7 @@ void run_nn(bool debug)
 
 void run_nn_continuous(bool debug)
 {
+    char ble_printf[64] = {0};
     bool stop_inferencing = false;
     int print_results = -(EI_CLASSIFIER_SLICES_PER_MODEL_WINDOW);
     // summary of inferencing settings (from model_metadata.h)
@@ -263,12 +297,23 @@ void run_nn_continuous(bool debug)
             ei_printf_float(result.anomaly);
             ei_printf("\r\n");
 #endif
-
-            print_results = 0;
+ /*BLE PRINTF*/
+        for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {            
+            sprintf(ble_printf, "%s: %f\n", result.classification[ix].label, result.classification[ix].value);
+            ble_nus_send_data(ble_printf, strlen(ble_printf));
         }
+#if EI_CLASSIFIER_HAS_ANOMALY == 1
+        sprintf(ble_printf, "anomaly score: %f\n", result.anomaly);
+        ble_nus_send_data(ble_printf, strlen(ble_printf));
+#endif
 
-        if(ei_user_invoke_stop()) {
+        memset(ble_printf, 0x00, sizeof(ble_printf));
+    /*END BLE PRINTF*/
+
+        if(ei_user_invoke_stop() || ei_ble_user_invoke_stop()) {
             ei_printf("Inferencing stopped by user\r\n");
+            ble_nus_send_data("Inferencing stopped by user\n", strlen("Inferencing stopped by user\n"));
+            memset(ble_printf, 0x00, sizeof(ble_printf));
             break;
         }
     }

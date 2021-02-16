@@ -34,6 +34,8 @@
 #include <sys/printk.h>
 #include <drivers/uart.h>
 
+#include "ble_nus.h"
+
 extern "C" void ei_led_state_control(void);
 
 /* Constants --------------------------------------------------------------- */
@@ -414,6 +416,20 @@ bool ei_user_invoke_stop(void)
     return stop_found;
 }
 
+bool ei_ble_user_invoke_stop(void)
+{
+    bool stop_found = false;
+    char data = ei_ble_rcv_cmd_buffer[0];
+   
+    if(data == 'b') {
+        stop_found = true;
+        ei_ble_rcv_cmd_flag = false;
+        memset(ei_ble_rcv_cmd_buffer, 0x00, sizeof(ei_ble_rcv_cmd_buffer));
+    }
+
+    return stop_found;
+}
+
 /**
  * @brief      Check if new serial data is available
  *
@@ -668,4 +684,28 @@ char uart_getchar(void)
 void uart_putchar(char send_char)
 {
     uart_poll_out(uart, send_char);
+}
+
+int uart_change_baudrate(tEiBaud baud)
+{
+    uart_config uart_cfg;
+
+    uart_config_get(uart, &uart_cfg);
+
+    ei_printf("uart baud: %d\n", uart_cfg.baudrate);
+
+    if(BAUD_9600 == baud){
+        uart_cfg.baudrate = 9600;
+    }
+    else if(BAUD_115200 == baud){
+        uart_cfg.baudrate = 115200;
+    }
+    else if(BAUD_460800 == baud){
+        uart_cfg.baudrate = 460800;
+    }
+    else if(BAUD_1000000 == baud){
+        uart_cfg.baudrate = 1000000;
+    }
+
+    return uart_configure(uart, &uart_cfg);
 }
