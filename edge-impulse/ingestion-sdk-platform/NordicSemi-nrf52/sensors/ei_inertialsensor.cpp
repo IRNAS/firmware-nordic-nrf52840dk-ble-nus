@@ -71,9 +71,9 @@ sampler_callback  cb_sampler;
 static float acceleration_g[N_AXIS_SAMPLED];
 int16_t data_raw_acceleration[N_AXIS_SAMPLED];
 
-int32_t sample_interval_real_us = 0;
+uint32_t sample_interval_real_us = 0;
 const struct device *i2c_dev;
-
+static bool accel_init = false;
 /**
  * @brief      Setup I2C config and accelerometer convert value
  *
@@ -125,7 +125,7 @@ bool ei_inertial_init(void)
 	}
 
     ei_printf("Sensor " ACCEL_DEVICE_LABEL " init OK\n");
-
+    accel_init = true;
     return true;
 }
 
@@ -136,7 +136,7 @@ void ei_inertial_read_data(void)
 {
     uint8_t reg;
 
-    if(i2c_dev){
+    if(accel_init){
         iis2dlpc_flag_data_ready_get(&dev_ctx, &reg);
 
         if(reg){
@@ -160,7 +160,7 @@ void ei_inertial_read_data(void)
         acceleration_g[0] = 0.0f;
         acceleration_g[1] = 0.0f;
         acceleration_g[2] = 0.0f;
-        EiDevice.delay_ms((uint32_t)(sample_interval_real_us / 1000));
+        k_usleep(sample_interval_real_us);
         cb_sampler((const void *)&acceleration_g[0], SIZEOF_N_AXIS_SAMPLED);
     }
 }
@@ -177,7 +177,7 @@ bool ei_inertial_sample_start(sampler_callback callsampler, float sample_interva
 {
     cb_sampler = callsampler;
 
-    sample_interval_real_us = int32_t(sample_interval_ms * 1000);
+    sample_interval_real_us = uint32_t(sample_interval_ms * 1000);
     sample_interval_real_us = sample_interval_real_us - (FLASH_WRITE_TIME_US + ACC_SAMPLE_TIME_US + CORRECTION_TIME_US);
 
     ei_printf("sample_interval_real_us = %d us\n", sample_interval_real_us);
