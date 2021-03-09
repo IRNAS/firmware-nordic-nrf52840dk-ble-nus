@@ -18,6 +18,7 @@
 #include <device.h>
 #include <soc.h>
 #include "ble_nus.h"
+#include "ei_ble_com.h"
 /*****/
 
 #define STACKSIZE CONFIG_BT_NUS_THREAD_STACK_SIZE
@@ -36,9 +37,7 @@ void ei_init(void)
 {
     ei_printf("Hello from Edge Impulse Device SDK.\r\n"
               "Compiled on %s %s\r\n", __DATE__, __TIME__);
-
-    ble_nus_init();
-
+    
     /* Setup the inertial sensor */
     if(ei_inertial_init() == false) {
         ei_printf("Inerial sensor communication error occured\r\n");
@@ -78,6 +77,10 @@ void ei_init(void)
     ei_printf("Type AT+HELP to see a list of commands.\r\n> ");
 
     EiDevice.set_state(eiStateFinished);
+
+    setup_cjson();
+    
+    ble_nus_init();
 }
 
 void ei_main(void)

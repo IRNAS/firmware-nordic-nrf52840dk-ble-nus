@@ -1,4 +1,5 @@
 #include "ble_nus.h"
+#include "ei_ble_com.h"
 
 bool ei_ble_rcv_cmd_flag = false;
 char ei_ble_rcv_cmd_buffer[50] = {0};
@@ -219,6 +220,7 @@ static int uart_init(void)
 static void connected(struct bt_conn *conn, uint8_t err)
 {
     char addr[BT_ADDR_LE_STR_LEN];
+    uint8_t temp_array[100] = {0x00};
 
     if (err) {
         LOG_ERR("Connection failed (err %u)", err);
@@ -229,6 +231,8 @@ static void connected(struct bt_conn *conn, uint8_t err)
     LOG_INF("Connected %s", log_strdup(addr));
 
     current_conn = bt_conn_ref(conn);
+
+    ei_ble_connect_handshake(temp_array);
 
     //dk_set_led_on(CON_STATUS_LED);
 }
