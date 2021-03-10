@@ -352,6 +352,20 @@ EI_CONFIG_ERROR ei_config_set_upload_host_settings(const char *api_key, const ch
 }
 
 /**
+ * Get upload settings
+ * @param api_key Out parameter
+ * @param upload_host Out parameter
+ */
+const char *ei_config_get_api_key_settings(void) {
+    // if (strlen(ei_config.upload_api_key) > 127) return -1;
+    // if (strlen(ei_config.upload_host) > 127) return -1;
+
+    return (const char *)ei_config.upload_api_key;
+    // memcpy(api_key, ei_config.upload_api_key, strlen(ei_config.upload_api_key) + 1);
+    // memcpy(upload_host, ei_config.upload_host, strlen(ei_config.upload_host) + 1);
+}
+
+/**
  * Set upload settings
  * @param upload_host Parameter
  */

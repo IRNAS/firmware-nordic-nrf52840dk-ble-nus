@@ -5,13 +5,19 @@
 #include "cJSON.h"
 #include "cJSON_os.h"
 #include "ei_device_nordic_nrf52.h"
+#include "ei_config_types.h"
+
+//TODO: need to use one from ei_config.h
+#define EDGE_IMPULSE_MAX_FREQUENCIES_L (5)
+extern const char *ei_config_get_api_key_settings(void);
 
 void ei_ble_connect_handshake (uint8_t * ei_ble_con_hs) {
-    ei_printf("vss send back handshake data\n");
+    ei_printf("vss1 send back handshake data\n");
 
-    uint8_t num_of_sensors = 2;
-    uint8_t id_buffer[32] = { 0 };
-    size_t id_size;
+    uint32_t err_code = 0;
+
+    const ei_device_sensor_t *list;
+    size_t list_size;
 
     char *string = NULL;
     cJSON *message = NULL;
@@ -49,14 +55,14 @@ void ei_ble_connect_handshake (uint8_t * ei_ble_con_hs) {
         ei_printf("error: cJSON_AddStringToObject");
     }
 
-    if(NULL == cJSON_AddStringToObject(hello, "apiKey", "ei_1234")){
+    if(NULL == cJSON_AddStringToObject(hello, "apiKey", ei_config_get_api_key_settings())){
         ei_printf("error: cJSON_AddStringToObject");
     }
 
     if(NULL == cJSON_AddStringToObject(hello, "deviceId", EiDevice.get_id_pointer())){
         ei_printf("error: cJSON_AddStringToObject");
     }
-    //r = ei_config_get_context()->get_device_type(id_buffer, &id_size);
+
     if(NULL == cJSON_AddStringToObject(hello, "deviceType", EiDevice.get_type_pointer())){
         ei_printf("error: cJSON_AddStringToObject");
     }
@@ -70,11 +76,22 @@ void ei_ble_connect_handshake (uint8_t * ei_ble_con_hs) {
         ei_printf("error: cJSON_AddArrayToObject");
     }
 
-    for(int i = 0; i < num_of_sensors; i++){
+    int r = EiDevice.get_sensor_list((const ei_device_sensor_t **)&list, &list_size);
+    if (r != 0) {
+        ei_printf("Failed to get sensor list (%d)\n", r);
+        return;
+    }
+
+    for(size_t i = 0; i < list_size; i++){
         cJSON *sensor = cJSON_CreateObject();
-        cJSON_AddStringToObject(sensor, "name", "Accelerometer");
-        cJSON_AddNumberToObject(sensor, "maxSampleLengthS", 60000);
+        cJSON_AddStringToObject(sensor, "name", list[i].name);
+        cJSON_AddNumberToObject(sensor, "maxSampleLengthS", (const double)list[i].max_sample_length_s);
         frequencies = cJSON_AddArrayToObject(sensor, "frequencies");
+        for (int j = 0; j < EDGE_IMPULSE_MAX_FREQUENCIES_L; j++){
+            if (list[i].frequencies[j] != 0.0f){
+                cJSON_AddItemToArray(frequencies, cJSON_CreateNumber((const double) list[i].frequencies[j]));
+            }
+        }
         cJSON_AddItemToArray(sensors, sensor);
     }
 
