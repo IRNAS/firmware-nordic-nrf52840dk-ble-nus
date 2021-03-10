@@ -9,7 +9,8 @@
 
 //TODO: need to use one from ei_config.h
 #define EDGE_IMPULSE_MAX_FREQUENCIES_L (5)
-extern const char *ei_config_get_api_key_settings(void);
+extern const char * ei_config_get_api_key_pointer(void);
+extern const char * ei_config_get_mgmt_url_pointer(void);
 
 void ei_ble_connect_handshake (uint8_t * ei_ble_con_hs) {
     ei_printf("vss1 send back handshake data\n");
@@ -37,7 +38,7 @@ void ei_ble_connect_handshake (uint8_t * ei_ble_con_hs) {
         ei_printf("error: cJSON_AddStringToObject");
     }
 
-    if(NULL == cJSON_AddStringToObject(handshake, "address", "wss://studio.edgeimpulse.com")){
+    if(NULL == cJSON_AddStringToObject(handshake, "address", ei_config_get_mgmt_url_pointer())){
         ei_printf("error: cJSON_AddStringToObject");
     }
 
@@ -55,7 +56,7 @@ void ei_ble_connect_handshake (uint8_t * ei_ble_con_hs) {
         ei_printf("error: cJSON_AddStringToObject");
     }
 
-    if(NULL == cJSON_AddStringToObject(hello, "apiKey", ei_config_get_api_key_settings())){
+    if(NULL == cJSON_AddStringToObject(hello, "apiKey", ei_config_get_api_key_pointer())){
         ei_printf("error: cJSON_AddStringToObject");
     }
 

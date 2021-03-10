@@ -353,16 +353,10 @@ EI_CONFIG_ERROR ei_config_set_upload_host_settings(const char *api_key, const ch
 
 /**
  * Get upload settings
- * @param api_key Out parameter
- * @param upload_host Out parameter
+ * @return api_key Out parameter
  */
-const char *ei_config_get_api_key_settings(void) {
-    // if (strlen(ei_config.upload_api_key) > 127) return -1;
-    // if (strlen(ei_config.upload_host) > 127) return -1;
-
+const char *ei_config_get_api_key_pointer(void) {
     return (const char *)ei_config.upload_api_key;
-    // memcpy(api_key, ei_config.upload_api_key, strlen(ei_config.upload_api_key) + 1);
-    // memcpy(upload_host, ei_config.upload_host, strlen(ei_config.upload_host) + 1);
 }
 
 /**
@@ -443,6 +437,16 @@ EI_CONFIG_ERROR ei_config_get_mgmt_settings(char ** mgmt_url, bool *is_connected
 
     return EI_CONFIG_OK;
 }
+
+/**
+ * Get upload settings
+ * @return mgmt_url Out parameter
+ */
+const char *ei_config_get_mgmt_url_pointer(void) {
+    return (const char *)ei_config.mgmt_url;;
+}
+
+
 
 EI_CONFIG_ERROR ei_config_clear() {
     memset(&ei_config, 0, sizeof(ei_config_t));
